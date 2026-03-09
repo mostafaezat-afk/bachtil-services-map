@@ -47,6 +47,8 @@ export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch,
 
   const handleCategorySelect = (id: string) => {
     setSelectedCat(id);
+    setSearchQuery('');
+    onClearResults();
     if (id !== 'all') setExpanded(true);
   };
 
