@@ -29,7 +29,7 @@ const calcDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number) 
   return R * c;
 };
 
-export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch, onFlyTo, onClose, userLocation }: SearchPanelProps) {
+export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch, onFlyTo, onClose, onClearResults, userLocation }: SearchPanelProps) {
   const [selectedCat, setSelectedCat] = useState('all');
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

@@ -128,6 +128,7 @@ const Index = () => {
         onSearch={handleSearch}
         onFlyTo={handleFlyTo}
         onClose={() => setSearchOpen(false)}
+        onClearResults={() => { setResults([]); setSearchTitle(''); }}
         userLocation={userLocation}
       />
       <AddServiceModal isOpen={addOpen} onClose={() => setAddOpen(false)} />
