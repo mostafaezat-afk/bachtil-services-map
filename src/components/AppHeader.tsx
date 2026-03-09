@@ -5,7 +5,7 @@ interface AppHeaderProps {
   isLocating?: boolean;
 }
 
-export function AppHeader({ onToggleSearch, onOpenAdd }: AppHeaderProps) {
+export function AppHeader({ onToggleSearch, onOpenAdd, onLocateMe, isLocating }: AppHeaderProps) {
   return (
     <header className="absolute top-0 left-0 w-full h-[60px] z-[1000] flex items-center justify-between px-4 pointer-events-none"
       style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)' }}>
