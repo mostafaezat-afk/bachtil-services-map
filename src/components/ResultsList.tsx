@@ -6,9 +6,10 @@ interface ResultsListProps {
   activities?: string[];
   onActivityClick?: (activity: string) => void;
   onFlyTo: (lat: number, lng: number) => void;
+  emptyMessage?: string;
 }
 
-export function ResultsList({ results, title, activities, onActivityClick, onFlyTo }: ResultsListProps) {
+export function ResultsList({ results, title, activities, onActivityClick, onFlyTo, emptyMessage }: ResultsListProps) {
   // Show activity list when no results yet
   if (activities && activities.length > 0 && results.length === 0) {
     return (
@@ -31,7 +32,7 @@ export function ResultsList({ results, title, activities, onActivityClick, onFly
   if (results.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center px-4 pb-4">
-        <p className="text-muted-foreground text-center">اختر قسماً أو ابحث عن خدمة لظهور النتائج</p>
+        <p className="text-muted-foreground text-center">{emptyMessage ?? 'اختر قسماً أو ابحث عن خدمة لظهور النتائج'}</p>
       </div>
     );
   }
@@ -69,3 +70,4 @@ export function ResultsList({ results, title, activities, onActivityClick, onFly
     </div>
   );
 }
+

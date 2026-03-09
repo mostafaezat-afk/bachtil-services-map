@@ -16,6 +16,7 @@ const Index = () => {
   const [searchTitle, setSearchTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const userCircleRef = useRef<L.Circle | null>(null);
 
@@ -85,6 +86,7 @@ const Index = () => {
           .bindPopup('📍 موقعك الحالي');
         userMarkerRef.current = marker;
 
+        setUserLocation({ lat: latitude, lng: longitude });
         map.flyTo([latitude, longitude], 17);
         toast.success('تم تحديد موقعك بنجاح');
         setIsLocating(false);
@@ -126,6 +128,7 @@ const Index = () => {
         onSearch={handleSearch}
         onFlyTo={handleFlyTo}
         onClose={() => setSearchOpen(false)}
+        userLocation={userLocation}
       />
       <AddServiceModal isOpen={addOpen} onClose={() => setAddOpen(false)} />
     </div>
@@ -133,3 +136,4 @@ const Index = () => {
 };
 
 export default Index;
+
