@@ -1,7 +1,8 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { ACTIVITIES, type ServiceProvider } from '@/lib/constants';
 import { CategoryGrid } from './CategoryGrid';
 import { ResultsList } from './ResultsList';
+import { Slider } from './ui/slider';
 
 interface SearchPanelProps {
   isOpen: boolean;
@@ -11,12 +12,27 @@ interface SearchPanelProps {
   onSearch: (activity: string) => void;
   onFlyTo: (lat: number, lng: number) => void;
   onClose: () => void;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
-export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch, onFlyTo, onClose }: SearchPanelProps) {
+const toRad = (deg: number) => (deg * Math.PI) / 180;
+
+const calcDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch, onFlyTo, onClose, userLocation }: SearchPanelProps) {
   const [selectedCat, setSelectedCat] = useState('all');
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [distanceKm, setDistanceKm] = useState(5);
 
   const activities = selectedCat !== 'all' ? ACTIVITIES[selectedCat] ?? [] : [];
 
@@ -24,6 +40,10 @@ export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch,
   const filteredActivities = searchQuery.length >= 2
     ? Object.values(ACTIVITIES).flat().filter((a) => a.includes(searchQuery))
     : activities;
+
+  const filteredResults = userLocation
+    ? results.filter((provider) => calcDistanceKm(userLocation.lat, userLocation.lng, provider.lat, provider.lng) <= distanceKm)
+    : results;
 
   const handleCategorySelect = (id: string) => {
     setSelectedCat(id);
@@ -34,6 +54,8 @@ export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch,
     onSearch(activity);
     setExpanded(true);
   };
+
+  const isDistanceEmpty = Boolean(userLocation && results.length > 0 && filteredResults.length === 0);
 
   // Mobile: bottom sheet behavior
   // Desktop: side panel
@@ -70,6 +92,27 @@ export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch,
 
           {/* Categories */}
           <CategoryGrid selected={selectedCat} onSelect={handleCategorySelect} />
+
+          {results.length > 0 && userLocation && (
+            <div className="mt-3 rounded-xl border border-border bg-secondary/50 p-3">
+              <div className="mb-2 flex items-center justify-between text-sm">
+                <span className="font-bold text-foreground">فلتر المسافة</span>
+                <span className="text-primary font-bold">{distanceKm} كم</span>
+              </div>
+              <Slider
+                min={1}
+                max={20}
+                step={1}
+                value={[distanceKm]}
+                onValueChange={(value) => setDistanceKm(value[0])}
+                aria-label="فلتر المسافة"
+              />
+            </div>
+          )}
+
+          {results.length > 0 && !userLocation && (
+            <p className="mt-3 text-xs text-muted-foreground">فعّل زر "موقعي" بالأعلى لتصفية النتائج حسب المسافة.</p>
+          )}
         </div>
 
         {/* Loading */}
@@ -82,7 +125,7 @@ export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch,
         {/* Results */}
         {!isLoading && (
           <ResultsList
-            results={results}
+            results={filteredResults}
             title={searchTitle}
             activities={searchQuery.length >= 2 ? filteredActivities : activities}
             onActivityClick={handleActivityClick}
@@ -90,9 +133,11 @@ export function SearchPanel({ isOpen, results, searchTitle, isLoading, onSearch,
               onFlyTo(lat, lng);
               if (window.innerWidth < 768) setExpanded(false);
             }}
+            emptyMessage={isDistanceEmpty ? `لا توجد نتائج ضمن ${distanceKm} كم من موقعك الحالي` : undefined}
           />
         )}
       </div>
     </>
   );
 }
+
