@@ -1,51 +1,52 @@
-import { useCallback, useRef, useState } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { CONFIG, type ServiceProvider } from '@/lib/constants';
 
-// Fix default icon paths
+// Fix default marker icons
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-L.Marker.prototype.options.icon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconAnchor: [12, 41] });
+const defaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconAnchor: [12, 41] });
+L.Marker.prototype.options.icon = defaultIcon;
 
 interface MainMapProps {
   onMapReady?: (map: L.Map) => void;
 }
 
-function MapEvents({ onMapReady }: { onMapReady?: (map: L.Map) => void }) {
-  const map = useMap();
-  const called = useRef(false);
-  if (!called.current && onMapReady) {
-    onMapReady(map);
-    called.current = true;
-  }
-  return null;
-}
-
 export function MainMap({ onMapReady }: MainMapProps) {
-  return (
-    <div className="absolute inset-0">
-      <MapContainer
-        center={CONFIG.CENTER}
-        zoom={CONFIG.ZOOM}
-        zoomControl={false}
-        maxBounds={CONFIG.MAX_BOUNDS}
-        maxBoundsViscosity={1.0}
-        minZoom={14}
-        className="w-full h-full"
-      >
-        <TileLayer
-          url="https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-          maxZoom={20}
-          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
-        />
-        <MapEvents onMapReady={onMapReady} />
-      </MapContainer>
-    </div>
-  );
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const map = L.map(containerRef.current, {
+      zoomControl: false,
+      maxBounds: CONFIG.MAX_BOUNDS,
+      maxBoundsViscosity: 1.0,
+      minZoom: 14,
+    }).setView(CONFIG.CENTER, CONFIG.ZOOM);
+
+    L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+    }).addTo(map);
+
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    mapRef.current = map;
+    onMapReady?.(map);
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  return <div ref={containerRef} className="absolute inset-0" />;
 }
 
-// Hook for managing markers on the map
+// Hook for managing markers
 export function useMapMarkers(map: L.Map | null) {
   const markersRef = useRef<L.Marker[]>([]);
 
@@ -58,7 +59,6 @@ export function useMapMarkers(map: L.Map | null) {
     (providers: ServiceProvider[]) => {
       if (!map) return;
       clearMarkers();
-
       const bounds = L.latLngBounds([]);
 
       providers.forEach((item) => {
