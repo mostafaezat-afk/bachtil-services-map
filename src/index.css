@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&display=swap');
 
 @layer base {
   :root {
@@ -48,7 +48,7 @@
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 207 90% 54%;
 
-    --font-main: 'Tajawal', sans-serif;
+    --font-main: 'Cairo', sans-serif;
   }
 }
 
