@@ -12,6 +12,7 @@ interface SearchPanelProps {
   onSearch: (activity: string) => void;
   onFlyTo: (lat: number, lng: number) => void;
   onClose: () => void;
+  onClearResults: () => void;
   userLocation?: { lat: number; lng: number } | null;
 }
 
