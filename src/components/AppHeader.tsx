@@ -1,6 +1,8 @@
 interface AppHeaderProps {
   onToggleSearch: () => void;
   onOpenAdd: () => void;
+  onLocateMe: () => void;
+  isLocating?: boolean;
 }
 
 export function AppHeader({ onToggleSearch, onOpenAdd }: AppHeaderProps) {
